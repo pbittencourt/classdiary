@@ -54,18 +54,18 @@ var green = '#859900';
 var color = [yellow, orange, red, magenta, violet, blue, cyan, green];
 
 function onOpen() {
-  SpreadsheetApp.getUi()
-      .createMenu('ARVI')
+SpreadsheetApp.getUi()
+    .createMenu('ARVI')
         .addItem('Atualizar lista de alunos', 'atualizaAlunos')
-      .addSeparator()
+    .addSeparator()
         .addItem('Adicionar atividade contínua', 'addContinua')
         .addItem('Remover atividade contínua', 'remContinua')
-      .addSeparator()
+    .addSeparator()
         .addItem('Inserir nova turma', 'addSheet')
         .addItem('Remover esta turma', 'remSheet')
-      .addSeparator()
+    .addSeparator()
         .addItem('Reiniciar documento', 'resetAllShit')
-      .addToUi();
+    .addToUi();
 }
 
 function setNumberSheets() {
@@ -242,30 +242,7 @@ function makeCopy(t, d, c) {
   nos intervalos nomeados, ex. "Bim6ARED", "Con6ARED", etc.
   */
   
-  //Implementar!!!
-  //var cod = codify(d)
-  switch (d) {
-      
-    case 'Ciências':
-      var cod = 'CIE';
-      break;
-      
-    case 'Física':
-      var cod = 'FIS';
-      break;
-      
-    case 'Geometria':
-      var cod = 'GMT';
-      break;
-      
-    case 'Química':
-      var cod = 'QUI';
-      break;
-      
-    default:
-      var cod = d.substring(0, 3).toUpperCase();
-      
-  }
+  var cod = codify(d)
   var sheetName = t.substring(0, 1) + t.substring(t.length - 1, t.length) + '-' + cod;
   var label = t.substring(0, 1) + t.substring(t.length - 1, t.length) + cod;
   
@@ -414,6 +391,30 @@ function makeCopy(t, d, c) {
   ss.toast('Criado controle de ' + d + ' para ' + t + '!');
   Utilities.sleep(500);
   
+}
+
+function codify(d) {
+    /**
+     * Cria um código de três letras a partir do
+     * nome da disciplina.
+     */
+    switch (d) {
+        case 'Ciências':
+            var cod = 'CIE';
+        break;
+        case 'Física':
+            var cod = 'FIS';
+        break;
+        case 'Geometria':
+            var cod = 'GMT';
+        break;
+        case 'Química':
+            var cod = 'QUI';
+        break;
+        default:
+            var cod = d.substring(0, 3).toUpperCase();
+    }
+    return cod;
 }
 
 function addSheet() {
