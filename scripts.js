@@ -18,7 +18,9 @@
 
 /**
  * Autor: Pedro P. Bittencourt 
- * <contato@pedrobittencourt.com.br>
+ * Email: contato@pedrobittencourt.com.br
+ * Site: pedrobittencourt.com.br
+ * Github: github.com/pbittencourt
  * Versão: 3.0
  *
  * TODO:
@@ -166,7 +168,9 @@ function installSheets () {
     // Verifica se o usuário marcou para cancelar a
     // criação de uma turma neste registro
     if (cancelar[j] == false) {
-      // DOUBLE-CHECKING: verifica se os dados não estão em branco
+      /* DOUBLE-CHECKING: verifica se os dados não estão em branco,
+       * pois os professores tendem a não selecionar o checkbox.
+       * Eliminar essa opção numa versão posterior. */
       if (turma[j] != '' || disciplina[j] != '') {
         // Copia a planilha 'modelo'
         makeCopy(turma[j], disciplina[j], j);
@@ -233,11 +237,7 @@ function makeCopy(t, d, c) {
   Utilities.sleep(500);
   
   /* 
-  Copia a planilha 'modelo'.
-  O nome seguirá o padrão "6A-RED", realizando um switch na disciplina
-  para lidar com os casos de ciências, física e química, que contém
-  acentuação, e geometria, que vira GMT para não confundir com [GEO]grafia.
-  
+  Copia a planilha 'modelo', cuj nome seguirá o padrão "6A-RED".   
   Aproveitamos para definir um 'label' no padrão "6ARED", que será utilizado
   nos intervalos nomeados, ex. "Bim6ARED", "Con6ARED", etc.
   */
@@ -396,7 +396,9 @@ function makeCopy(t, d, c) {
 function codify(d) {
     /**
      * Cria um código de três letras a partir do
-     * nome da disciplina.
+     * nome da disciplina. O switch é necessário
+     * para lidar com nomes que contém acentos e
+     * para diferenciar [GEO]metria de [GEO]grafia.
      */
     switch (d) {
         case 'Ciências':
