@@ -22,8 +22,6 @@
  * Site: pedrobittencourt.com.br
  * Github: github.com/pbittencourt
  * Versão: 3.0
- *
- * TODO:
  */
 
 // global variables
@@ -821,89 +819,91 @@ function atualizaAlunos(planilha) {
 }
 
 function resetAllShit() {
-  /**
-   * Deleta todas as turmas que foram criadas
-   * e retorna as planilhas de instalação e
-   * configuração ao estado inicial.
-   */
-  
-  var ui = SpreadsheetApp.getUi();
-  var sheets = ss.getSheets();
-  var count = sheets.length;
-  
-  // informa o usuário pra não fazer caquinha
-  var msg = 'Você tem certeza de que deseja excluir todos os controles de notas deste documento e retorná-lo ao estado inicial? Este processo é irreversível.';
-  var response = ui.alert('Deletando os controles de notas', msg, ui.ButtonSet.YES_NO);
-    
-  if (response == ui.Button.YES) {
-  
-      for (i = 0; i < count; i++) {
-        var name = sheets[i].getName();
-        
-        // Verifica se o nome da planilha atual consta em 'DEFAULTS'
-        if (defaults.indexOf(name) == -1) {  // não consta!
-          
-          Logger.log('Deletarei a planilha ' + name);
-          
-          // Deleta a planilha
-          ss.deleteSheet(sheets[i]);
-          
-        } else {  // consta!
-          
-          //do nothing! grab yourself some coffee (:
-          Logger.log('Manterei a planilha ' + name);
-          
+    /**
+    * Deleta todas as turmas que foram criadas
+    * e retorna as planilhas de instalação e
+    * configuração ao estado inicial.
+    */
+
+    var ui = SpreadsheetApp.getUi();
+    var sheets = ss.getSheets();
+    var count = sheets.length;
+
+    // informa o usuário pra não fazer caquinha
+    var msg = 'Você tem certeza de que deseja excluir todos os controles de notas deste documento e retorná-lo ao estado inicial? Este processo é irreversível.';
+    var response = ui.alert('Deletando os controles de notas', msg, ui.ButtonSet.YES_NO);
+
+    if (response == ui.Button.YES) {
+
+        for (i = 0; i < count; i++) {
+            var name = sheets[i].getName();
+
+            // Verifica se o nome da planilha atual consta em 'DEFAULTS'
+            if (defaults.indexOf(name) == -1) {  // não consta!
+
+                // Deleta intervalos nomeados.
+                // Precisamos deletá-los *antes* de excluir a planilha porque o Sheets
+                // não deleta intervalos inválidos. Ou seja: se houver '#REF!', o nome
+                // fica ali *para sempre*!
+                var namedRanges = ss.getNamedRanges();
+                var keepNamedRanges = ['LinkMestra', 'LinkSimulados', 'Professor', 'Periodo', 'Ano'];
+                for (var i = 0; i < namedRanges.length; i++ ) {
+                    var thisNamed = namedRanges[i].getName();
+                    if (keepNamedRanges.indexOf(thisNamed) == -1) {
+                        Logger.log('Deletarei ' + thisNamed);
+                        namedRanges[i].remove();
+                    }
+                }
+                Logger.log('Deletarei a planilha ' + name);
+
+                // Deleta a planilha
+                ss.deleteSheet(sheets[i]);
+
+            } else {  // consta!
+
+                //do nothing! grab yourself some coffee (:
+                Logger.log('Manterei a planilha ' + name);
+
+            }
         }
-      }
-      
-      // Reseta 'Turmas' para o estado inicial,
-      // removendo o que houver da linha 11 para baixo
-      // (se houver) e limpando a caixa de cancelamento
-      var turmasLastRow = turmas.getLastRow();
-      if (turmasLastRow > 11) {
-        turmas.deleteRows(12, turmasLastRow - 11);
-      }
-      turmas.getRange('B10').clearContent();
-      turmas.getRange('E10').clearContent();
-      turmas.getRange('H10').setValue(false);
           
-      // Reseta 'Início'
-      inicio.getRange('B6').setValue('Escreva seu nome');
-      inicio.getRange('B10').clearContent();
-          
-      // Reseta 'Resumo', limpando o conteúdo
-      // da linha 1 para baixo (se houver)
-      var resumoLastRow = resumo.getLastRow();
-      if (resumoLastRow > 1) {
-        resumo.getRange(2, 1, resumoLastRow - 1, 30).clearContent();
-      }
-    
-      // Reseta 'Atividades', limpando o conteúdo
-      // da coluna 2 para a direita
-      var atividadesMaxCol = atividades.getMaxColumns()
-      var atividadesMaxRow = atividades.getMaxRows();
-      atividades.getRange(1, 2, atividadesMaxRow, atividadesMaxCol - 1).clearContent();
-        
-      // Deleta intervalos nomeados
-      var namedRanges = ss.getNamedRanges();
-      var keepNamedRanges = ['LinkMestra', 'LinkSimulados', 'Professor', 'Periodo', 'Ano'];
-      for (var i = 0; i < namedRanges.length; i++ ) {
-        var thisNamed = namedRanges[i].getName();
-        if (keepNamedRanges.indexOf(thisNamed) == -1) {
-          Logger.log('Deletarei ' + thisNamed);
-          namedRanges[i].remove();
+        // Reseta 'Turmas' para o estado inicial,
+        // removendo o que houver da linha 11 para baixo
+        // (se houver) e limpando a caixa de cancelamento
+        var turmasLastRow = turmas.getLastRow();
+        if (turmasLastRow > 11) {
+            turmas.deleteRows(12, turmasLastRow - 11);
         }
-      }
-        
-      // Exibe 'Inicio' e oculta o restante
-      inicio.showSheet();
-      turmas.hideSheet();
-      conf.hideSheet();
-      resumo.hideSheet();
-      modelo.hideSheet();
-      atividades.hideSheet()
-  
-  }
+        turmas.getRange('B10').clearContent();
+        turmas.getRange('E10').clearContent();
+        turmas.getRange('H10').setValue(false);
+
+        // Reseta 'Início'
+        inicio.getRange('B6').setValue('Escreva seu nome');
+        inicio.getRange('B10').clearContent();
+
+        // Reseta 'Resumo', limpando o conteúdo
+        // da linha 1 para baixo (se houver)
+        var resumoLastRow = resumo.getLastRow();
+        if (resumoLastRow > 1) {
+            resumo.getRange(2, 1, resumoLastRow - 1, 30).clearContent();
+        }
+
+        // Reseta 'Atividades', limpando o conteúdo
+        // da coluna 2 para a direita
+        var atividadesMaxCol = atividades.getMaxColumns()
+        var atividadesMaxRow = atividades.getMaxRows();
+        atividades.getRange(1, 2, atividadesMaxRow, atividadesMaxCol - 1).clearContent();
+
+        // Exibe 'Inicio' e oculta o restante
+        inicio.showSheet();
+        turmas.hideSheet();
+        conf.hideSheet();
+        resumo.hideSheet();
+        modelo.hideSheet();
+        atividades.hideSheet()
+
+    }
   
 }
 
