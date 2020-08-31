@@ -774,7 +774,7 @@ function atualizaAlunos(planilha) {
     var lista = sheet.getRange('C4:C28');
     lista.activate();
     // Exibe todas as linhas
-    sheet.showRows(spreadsheet.getActiveRange().getRow(), spreadsheet.getActiveRange().getNumRows());
+    sheet.showRows(ss.getActiveRange().getRow(), ss.getActiveRange().getNumRows());
 
     // Posição do primeiro estudante
     var pos = 4;
@@ -799,10 +799,10 @@ function atualizaAlunos(planilha) {
     sheet.getRange(pos, 1, (28-pos+1)).activate();
 
     // Finalmente, oculta essas linhas selecionadas
-    spreadsheet.getActiveSheet().hideRows(spreadsheet.getActiveRange().getRow(), spreadsheet.getActiveRange().getNumRows());
+    ss.getActiveSheet().hideRows(ss.getActiveRange().getRow(), ss.getActiveRange().getNumRows());
 
     // Coloca o cursor no título da planilha só pra ficar bonitin!
-    spreadsheet.getRange('A1').activate();
+    ss.getRange('A1').activate();
 
     ss.toast('Lista de estudantes atualizada com sucesso!');
 
@@ -825,25 +825,27 @@ function resetAllShit() {
 
     if (response == ui.Button.YES) {
 
+        // Deleta intervalos nomeados.
+        // Precisamos deletá-los *antes* de excluir as planilhas porque o 
+        // Sheets não deleta intervalos inválidos. Ou seja: se houver '#REF!', 
+        // o intervalo nomeado fica ali *para sempre*!
+        var namedRanges = ss.getNamedRanges();
+        var keepNamedRanges = ['LinkMestra', 'LinkSimulados', 'Professor', 'Periodo', 'Ano'];
+        for (var i = 0; i < namedRanges.length; i++ ) {
+            var thisNamed = namedRanges[i].getName();
+            if (keepNamedRanges.indexOf(thisNamed) == -1) {
+                Logger.log('Deletarei ' + thisNamed);
+                namedRanges[i].remove();
+            }
+        }
+
+        // Agora sim, deleta as planilhas contendo controles de notas!
         for (i = 0; i < count; i++) {
             var name = sheets[i].getName();
 
             // Verifica se o nome da planilha atual consta em 'DEFAULTS'
             if (defaults.indexOf(name) == -1) {  // não consta!
 
-                // Deleta intervalos nomeados.
-                // Precisamos deletá-los *antes* de excluir a planilha porque o Sheets
-                // não deleta intervalos inválidos. Ou seja: se houver '#REF!', o nome
-                // fica ali *para sempre*!
-                var namedRanges = ss.getNamedRanges();
-                var keepNamedRanges = ['LinkMestra', 'LinkSimulados', 'Professor', 'Periodo', 'Ano'];
-                for (var i = 0; i < namedRanges.length; i++ ) {
-                    var thisNamed = namedRanges[i].getName();
-                    if (keepNamedRanges.indexOf(thisNamed) == -1) {
-                        Logger.log('Deletarei ' + thisNamed);
-                        namedRanges[i].remove();
-                    }
-                }
                 Logger.log('Deletarei a planilha ' + name);
 
                 // Deleta a planilha
