@@ -571,7 +571,7 @@ function addContinua() {
 
     // Se essa planilha estiver no defaults,
     // retorne sem executar!
-    if (defaults.indexOf(sheet.getName()) == -1) {
+    if (defaults.indexOf(sheet.getName()) != -1) {
         ss.toast('Não é possível adicionar atividade contínua nesta planilha!');
         return
     }
@@ -669,7 +669,7 @@ function remContinua() {
 
     // Se essa planilha estiver no defaults,
     // retorne sem executar!
-    if (defaults.indexOf(sheet.getName()) == -1) {
+    if (defaults.indexOf(sheet.getName()) != -1) {
         ss.toast('Não é possível remover atividade contínua desta planilha!');
         return
     }
