@@ -1,0 +1,40 @@
+{
+  "timeZone": "America/New_York",
+  "dependencies": {
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [{
+      "menuName": "conserta as bagaça",
+      "functionName": "myFunction",
+      "defaultShortcut": "Ctrl+Alt+Shift+1"
+    }, {
+      "menuName": "Inserir coluna de recuperação",
+      "functionName": "myFunction1",
+      "defaultShortcut": "Ctrl+Alt+Shift+9"
+    }, {
+      "menuName": "Simulados from Mestra TB",
+      "functionName": "SimuladosfromMestraTB"
+    }, {
+      "menuName": "RandomShit",
+      "functionName": "RandomShit"
+    }, {
+      "menuName": "cleanShit",
+      "functionName": "cleanShit"
+    }, {
+      "menuName": "mudaNome",
+      "functionName": "mudaNome",
+      "defaultShortcut": "Ctrl+Alt+Shift+9"
+    }, {
+      "menuName": "merges",
+      "functionName": "merges"
+    }, {
+      "menuName": "opa",
+      "functionName": "opa"
+    }, {
+      "menuName": "aiapis",
+      "functionName": "aiapis"
+    }]
+  }
+}
