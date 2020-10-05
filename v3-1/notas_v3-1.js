@@ -21,6 +21,16 @@
    Site: pedrobittencourt.com.br
    Github: github.com/pbittencourt/classdiary
    Versão: 3.1
+   
+   Principais modificações desta versão em relação
+   à anterior:
+   + As atividades contínuas não são mais adicionadas/removidas
+     'on the fly', ou seja, não são mais inseridas/excluídas
+     colunas da planilha. Agora, a planilha de modelo já
+     contém 20 atividades, que são exibidas/ocultas de
+     acordo com as requisições do usuário.
+   + A planilha 'Atividades' não é mais necessária, por conta
+     das alterações vistas no item anterior.
  
  */
 
@@ -32,8 +42,7 @@ var inicio = ss.getSheetByName('Início');
 var turmas = ss.getSheetByName('Turmas');
 var modelo = ss.getSheetByName('modelo');
 var resumo = ss.getSheetByName('Resumo');
-var atividades = ss.getSheetByName('Atividades');
-var defaults = ['Início', 'Turmas', 'modelo', 'conf', 'Resumo', 'Atividades'];
+var defaults = ['Início', 'Turmas', 'modelo', 'conf', 'Resumo'];
 
 // colour pallete: solarized theme
 var base03 = '#002b36';
@@ -144,34 +153,27 @@ function installSheets () {
     var values = range.getValues();
 
     /* Arrays para armazenar o nome da turma e a disciplina que o 
-     * professor ministra nesta turma. Nosso intervalo possui 8 colunas
+     * professor ministra nesta turma. Nosso intervalo possui 5 colunas
      * de largura, mescladas da seguinte maneira:
-     * [2 | 1 | 2 | 1 | 1]
-     * [turma | divisor | disciplina | divisor | cancelar] */
+     * [2 | 1 | 2]
+     * [turma | divisor | disciplina] */
     var turma = [];
     var disciplina = [];
-    var cancelar = [];
     for (var i = 0; i < values.length; i++) {
         if (i % 2 == 0) {
             turma.push( values[i][0] );
             disciplina.push( values[i][3] );
-            cancelar.push(values [i][6] );
         }
     }
 
     // Loop através de todas as turmas definidas anteriormente
     for (var j = 0; j < turma.length; j++) {
 
-        // Verifica se o usuário marcou para cancelar a
-        // criação de uma turma neste registro
-        if (cancelar[j] == false) {
-            /* DOUBLE-CHECKING: verifica se os dados não estão em branco,
-             * pois os professores tendem a não selecionar o checkbox.
-             * Eliminar essa opção numa versão posterior. */
-            if (turma[j] != '' || disciplina[j] != '') {
-                // Copia a planilha 'modelo'
-                makeCopy(turma[j], disciplina[j], j);
-            }
+        // Se não houver linhas com campos não preenchidos,
+        // faremos uma cópia do modelo para a turma/disciplina
+        if (turma[j] != '' || disciplina[j] != '') {
+            // Copia a planilha 'modelo'
+            makeCopy(turma[j], disciplina[j], j);
         }
 
     }
@@ -193,7 +195,6 @@ function installSheets () {
     inicio.hideSheet();
     turmas.hideSheet();
     conf.hideSheet();
-    atividades.hideSheet();
     resumo.showSheet();
     Utilities.sleep(500);
 
