@@ -248,10 +248,10 @@ function makeCopy(t, d, c) {
     newSheet.getRange('B1:C1').setValue(t);
     // Insere 'disciplina' em B2:C2
     newSheet.getRange('B2:C2').setValue(d);
-    // Insere 'bônus' em L2 e cria um
+    // Insere 'bônus' em Z2 e cria um
     // intervalo nomeado no padrão 'Bon6ARED'
-    newSheet.getRange('L2').setFormula('=MROUND(0,15 * SUM(K31:K36); 0,2)');
-    ss.setNamedRange('Bon' + label, newSheet.getRange('L2'));
+    newSheet.getRange('Z2').setFormula('=MROUND(0,15 * SUM(K31:K36); 0,2)');
+    ss.setNamedRange('Bon' + label, newSheet.getRange('Z2'));
 
     /* A coluna A é escondida do usuário. Nela, temos algumas variáveis
      * de controle, para puxar dados de outras planilhas. A célula A1
@@ -301,7 +301,7 @@ function makeCopy(t, d, c) {
     resumo.getRange(row, 3).setValue(setEstudantes);
 
     // Colunas E:I: notas dos estudantes
-    var setNotas = `={'${sheetName}'!Z4:AD28}`;
+    var setNotas = `={'${sheetName}'!AN4:AR28}`;
     resumo.getRange(row, 5).setValue(setNotas);
 
     // Intervalos nomeados [E, F, G, H, I]
@@ -330,7 +330,7 @@ function makeCopy(t, d, c) {
 
     // Coluna J: situações dos estudantes
     var cell = 'I' + row;
-    var setSituacao = `=IF( ISTEXT(${cell}); "..."; IF( ${cell} <= 6; "rec"; "ok"))`;
+    var setSituacao = `=IF( ISTEXT(${cell}); "..."; IF( ${cell} < 6; "rec"; "ok"))`;
     resumo.getRange(row, 10).setFormula(setSituacao).activate();
     var setSituacaoRange = resumo.getRange(row, 10, 25).getA1Notation();
     resumo.getActiveRange().autoFill(resumo.getRange(setSituacaoRange), SpreadsheetApp.AutoFillSeries.DEFAULT_SERIES);
@@ -340,34 +340,11 @@ function makeCopy(t, d, c) {
      * referenciado na planilha resumo, para constar nos
      * boletins individuais. */
     var allConName = 'Continuas' + label;
-    var allConRange = newSheet.getRange('D4:I28');
+    var allConRange = newSheet.getRange('D4:W28');
     ss.setNamedRange(allConName, allConRange);
 
     // Colunas K-> AD: notas contínuas dos estudantes.
     resumo.getRange(row, 11).setValue(`={${allConName}}`);
-
-    Utilities.sleep(500);
-
-    /////////////////////////
-    // ATUALIZANDO ATIVIDADES
-    /////////////////////////
-    /* A planilha de atividades contém todas as contínuas
-     * solicitadas pelo professor em todas as turmas/disciplinas.
-     * Utilizado no boletim individual. */
-
-    // Nova coluna, a partir da qual se inicia a atualização
-    var newCol = atividades.getLastColumn() + 1;
-
-    // Insere turma na linha 1
-    atividades.getRange(1, newCol).setValue(sheetName);
-
-    // Insere fórmula na linha 2
-    var ativFormula = `=JOIN("|"; '${sheetName}'!E31; '${sheetName}'!K31; '${sheetName}'!L31)`;
-    atividades.getRange(2, newCol).setFormula(ativFormula).activate();
-
-    // Copia fórmula até a linha 21
-    var ativRange = atividades.getRange(2, newCol, 20).getA1Notation();
-    atividades.getActiveRange().autoFill(atividades.getRange(ativRange), SpreadsheetApp.AutoFillSeries.DEFAULT_SERIES);
 
     Utilities.sleep(500);
 
@@ -377,7 +354,6 @@ function makeCopy(t, d, c) {
 
     newSheet.activate();
     newSheet.showSheet();
-    ss.toast('Criado controle de ' + d + ' para ' + t + '!');
     Utilities.sleep(500);
 
 }
@@ -471,24 +447,6 @@ function remSheet() {
             }
             Utilities.sleep(1000);
             resumo.deleteRows(start, 25);
-            Utilities.sleep(1000);
-
-            //////////////////////
-            // ATUALIZA ATIVIDADES
-            //////////////////////
-
-            var numCols = atividades.getLastColumn();
-            var range = atividades.getRange(1, 1, 1, numCols);
-            var rangeValues = range.getValues();
-            var header = rangeValues[0];
-
-            for (var i = 0; i < header.length; i++) {
-                if (header[i] == sheetName) {
-                    var deleteCol = i + 1;
-                }
-            }
-            Utilities.sleep(1000);
-            atividades.deleteColumn(deleteCol);
             Utilities.sleep(1000);
 
             //////////////////
@@ -586,69 +544,15 @@ function addContinua() {
     // número da próxima atividade
     var newNumber = parseInt(number) + 1;
 
-    // Insere nova coluna na planilha
-    sheet.insertColumnBefore(3 + newNumber);
-    // Numera a atividade
-    sheet.getRange(3, 3 + newNumber).setValue('C' + newNumber);
+    // Exibe nova coluna na planilha
+    sheet.showColumns(3 + newNumber);
     // Ativa a nova coluna
     var newColumn = sheet.getRange(3, 3 + newNumber, 26).activate();
-    // Define as bordas
-    newColumn.setBorder(true, true, true, null, true, true, '#000000', SpreadsheetApp.BorderStyle.SOLID);
 
-    // Insere nova linha na planilha
-    sheet.insertRowAfter(lastRow);
-    // Numera a atividade
-    sheet.getRange(lastRow + 1, 4).setValue('C' + newNumber);
-    // Copia a formatação
-    var lastLine = sheet.getRange(lastRow, 5, 1, 11).getA1Notation();
-    var lastLines = sheet.getRange(lastRow, 5, 2, 11).getA1Notation();
-    sheet.getRange(lastLine).activate();
-    sheet.getActiveRange().autoFill(sheet.getRange(lastLines), SpreadsheetApp.AutoFillSeries.DEFAULT_SERIES);
-    sheet.getRange(lastLines).activate();
-    // Limpa o conteúdo após copiar a formatação
-    sheet.getRange(lastRow+1, 5, 1, 11).clearContent().activate();
+    // Exibe nova linha na planilha
+    sheet.showRows(lastRow + 1);
     // Foca no campo de descrição da atividade recém criada
     sheet.getRange(lastRow+1, 5).activate();
-
-    // Atualiza transposição de valores
-    var rowsRange = sheet.getRange(lastRow - number + 1, 4 + newNumber + 1, newNumber).getA1Notation();
-    sheet.getRange('D2').setFormula('=TRANSPOSE(' + rowsRange + ')');
-
-    // Atualiza bônus
-    var bonusLabel = 'Bon' + label;
-    ss.getRangeByName(bonusLabel).setFormula(`=MROUND(0,15 * SUM(${rowsRange}); 0,2)`);
-
-    // Atualiza namedRange com todas as contínuas
-    var continuasRange = sheet.getRange(4, 4, 25, newNumber);
-    ss.setNamedRange('Continuas' + label, continuasRange);
-
-    // Formatação condicional (nota vermelha)
-    var col = newNumber+3;
-    var range = sheet.getRange(4, col, 25);
-    var rangeA1 = range.getA1Notation();
-    var letter = columnToLetter(col);
-    var formula = `=(\{${rangeA1}\}) < ( 0,6 * ${letter}$2 )`;
-
-    var rule = SpreadsheetApp.newConditionalFormatRule()
-        .whenFormulaSatisfied(formula)
-        .setFontColor('#ff0000')
-        .setRanges([range])
-        .build();
-    var rules = sheet.getConditionalFormatRules();
-    rules.push(rule);
-    sheet.setConditionalFormatRules(rules);
-
-    // Validação de dados (nota abaixo do limite)
-    var formula = `=OR( \{${rangeA1}\} <= ${letter}$2; ISTEXT(\{${rangeA1}\}) )`;
-    var rule = SpreadsheetApp.newDataValidation()
-        .requireFormulaSatisfied(formula)
-        .setAllowInvalid(false)
-        .setHelpText('Insira um valor que não exceda o estipulado para essa atividade!')
-        .build();
-    range.setDataValidation(rule);
-
-    // Largura da coluna
-    sheet.setColumnWidth(col, 35);
 
     // The end! (:
     ss.toast('Atividade adicionada com sucesso!');
