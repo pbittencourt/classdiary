@@ -604,8 +604,15 @@ function remContinua() {
 
 function shareDoc() {
     /**
-     * Compartilha spreadsheet com coordenação e 'rapaz do TI'
+     * Compartilha spreadsheet com coordenação e 'rapaz do TI',
+     * além de adicionar link na planilha 'LINQUES'
      */
+
+    // Variables
+    var id = ss.getId();
+    var name = ss.getName();
+    var doc = DriveApp.getFileById(id);
+    var linques = DriveApp.getFileById('1JdHPFsGTmA7_0ReDd8KhNIW-otnVHmsIih9HpUNUAeM');
 
     // Verifica quem são os editores do documento
     var editors = ss.getEditors(); 
@@ -631,12 +638,13 @@ function shareDoc() {
      * Aproveita para conceder permissão a todos com o link. */
     if (cont < shares.length) {
         ss.addEditors(shares);
-        var id = ss.getId();
-        var doc = DriveApp.getFileById(id);
         doc.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
     }
 
-    ss.toast('Lista de editores atualizada com sucesso!');
+    // Adiciona url deste documento à planilha de links
+    var linkNextRow = linques.getLastRow() + 1;
+    linques.getRange(linkNextRow, 1).setValue(name);
+    linques.getRange(linkNextRow, 2).setValue(id)
 
 };
 
