@@ -31,6 +31,8 @@
      acordo com as requisições do usuário.
    + A planilha 'Atividades' não é mais necessária, por conta
      das alterações vistas no item anterior.
+   + Notas de simulados e atividades complementares
+     passaram a ser melhor discriminados nos boletins.
  
  */
 
@@ -205,7 +207,7 @@ function installSheets () {
 
     // Compartilha com coordenação e "rapaz do TI"
     ss.toast('Compartilhando com a coordenação ...');
-    shareDoc();
+    //shareDoc();
     Utilities.sleep(500);
 
     // Mensagem de sucesso!
@@ -487,29 +489,7 @@ function renameSS(disciplina) {
             disciplinas += ' ';
         }
 
-        switch (unique[i]) {
-
-            case 'Ciências':
-                var cod = 'CIE';
-                break;
-
-            case 'Física':
-                var cod = 'FIS';
-                break;
-
-            case 'Geometria':
-                var cod = 'GMT';
-                break;
-
-            case 'Química':
-                var cod = 'QUI';
-                break;
-
-            default:
-                var cod = unique[i].substring(0, 3).toUpperCase();
-
-        }
-        disciplinas += cod;
+        disciplinas += codify(unique[i])
 
     }
 
@@ -526,36 +506,37 @@ function addContinua() {
 
     // Planilha atual
     var sheet = SpreadsheetApp.getActiveSheet();
-    var label = sheet.getName().replace('-', '');
 
     // Se essa planilha estiver no defaults,
     // retorne sem executar!
-    if (defaults.indexOf(sheet.getName()) != -1) {
+    if (defaults.indexOf(sheet.getName()) == -1) {
         ss.toast('Não é possível adicionar atividade contínua nesta planilha!');
         return
     }
 
-    // Na última linha da planilha se localiza a atual última atividade
-    var lastRow = sheet.getLastRow();
-    // 'nome' da última atividade (Cnº)  
-    var lastActivity = sheet.getRange(lastRow, 4);
-    // número da última atividade
-    var number = lastActivity.getValue().replace('C','');
-    // número da próxima atividade
-    var newNumber = parseInt(number) + 1;
+    // Verifica se a coluna da última atividade encontra-se oculta
+    if (sheet.isColumnHiddenByUser(23)) {
+        // Exibe a próxima coluna oculta
+        for (var i = 10; i <= 23; i++) {
+            if (sheet.isColumnHiddenByUser(i)) {
+                sheet.showColumns(i);
+                break
+            } 
+        }
+        // Exibe a próxima linha oculta
+        for (var i = 37; i <= 50; i++) {
+            if (sheet.isRowHiddenByUser(i)) {
+                sheet.showRows(i);
+                // Ativa campo para preenchimento do título da nova atividade
+                sheet.getRange(i, 5).activate();
+                break
+            } 
+        }
+        ss.toast('Atividade adicionada com sucesso!');
+    } else {
+        ss.toast('Limite de atividades atingido!');
+    }
 
-    // Exibe nova coluna na planilha
-    sheet.showColumns(3 + newNumber);
-    // Ativa a nova coluna
-    var newColumn = sheet.getRange(3, 3 + newNumber, 26).activate();
-
-    // Exibe nova linha na planilha
-    sheet.showRows(lastRow + 1);
-    // Foca no campo de descrição da atividade recém criada
-    sheet.getRange(lastRow+1, 5).activate();
-
-    // The end! (:
-    ss.toast('Atividade adicionada com sucesso!');
 }
 
 function remContinua() {
@@ -567,51 +548,56 @@ function remContinua() {
 
     // Planilha atual
     var sheet = ss.getActiveSheet();
-    // Variável 'label', utilizada em outras funções deste script,
-    // segue o padrão '6ARED', ou seja, correspondente ao nome da
-    // planilha sem o hífen.
-    var label = sheet.getName().replace('-', '');
 
     // Se essa planilha estiver no defaults,
     // retorne sem executar!
-    if (defaults.indexOf(sheet.getName()) != -1) {
+    if (defaults.indexOf(sheet.getName()) == -1) {
         ss.toast('Não é possível remover atividade contínua desta planilha!');
         return
     }
 
-    // 'cabeçalho' da lista de atividades,
-    // utilizado pra saber quantas existem no momento
-    var first = 30;
-    // última linha de atividades
-    var last = sheet.getLastRow();
-    // quantidade de atividades
-    var count = last - first;
-    // coluna a ser deletada
-    var columnPosition = count + 3;
-
     // Se houver apenas 6 atividades, não deletaremos!
-    if (count <= 6) {
+    if (sheet.isColumnHiddenByUser(10)) {
         ss.toast('O número mínimo de atividades foi atingido!');
     } else {
+        // Verifica qual é a última linha que está sendo exibida
+        // (a partir da linha 37, correspondente à C7)
+        for (var i = 37; i <= 50; i++) {
+            if (sheet.isRowHiddenByUser(i)) {
+                var hideThisRow = i - 1;
+                var count = i - 31;
+                var found = true;
+                break
+            }
+        }
+        // Se não encontrou nenhuma linha oculta, as 20
+        // atividades estão sendo exibidas!
+        if (!found) {
+            var hideThisRow = 50;
+            var count = 20;
+        }
 
         // Informa o usuário pra não fazer caquinha
         var msg = 'Você tem certeza de que deseja excluir a atividade "C' + count + '" da lista? Este processo é irreversível.';
         var response = ui.alert('Deletando a última atividade da lista', msg, ui.ButtonSet.YES_NO);
 
         if (response == ui.Button.YES) {
-            // Remove coluna e linha
-            sheet.deleteColumn(columnPosition);
-            sheet.deleteRow(last);
+            // Pega coluna correspondente à atividade
+            var hideThisCol = hideThisRow - 27;
 
-            // Atualiza transposição de dados
-            var rowsRange = sheet.getRange(first + 1, 4 + count, count - 1).getA1Notation();
-            sheet.getRange('D2').setFormula('=TRANSPOSE(' + rowsRange + ')');
+            // Apaga conteúdos da coluna
+            sheet.getRange(4, hideThisCol, 25).clear({contentsOnly: true});
 
-            // Atualiza namedRange com todas as contínuas
-            var continuasRange = sheet.getRange(4, 4, 25, count - 1);
-            ss.setNamedRange('Continuas' + label, continuasRange);
+            // Apaga conteúdos da linha
+            sheet.getRange(hideThisRow, 5, 1, 22).clear({contentsOnly: true});
+
+            // Esconde coluna e linha
+            sheet.hideRows(hideThisRow);
+            sheet.hideColumns(hideThisCol);
+
+            // Ativa a coluna anterior
+            sheet.getRange(4, hideThisCol - 1, 25).activate();
         }
-
     }
 
 }
@@ -786,19 +772,12 @@ function resetAllShit() {
             resumo.getRange(2, 1, resumoLastRow - 1, 30).clearContent();
         }
 
-        // Reseta 'Atividades', limpando o conteúdo
-        // da coluna 2 para a direita
-        var atividadesMaxCol = atividades.getMaxColumns()
-        var atividadesMaxRow = atividades.getMaxRows();
-        atividades.getRange(1, 2, atividadesMaxRow, atividadesMaxCol - 1).clearContent();
-
         // Exibe 'Inicio' e oculta o restante
         inicio.showSheet();
         turmas.hideSheet();
         conf.hideSheet();
         resumo.hideSheet();
         modelo.hideSheet();
-        atividades.hideSheet()
 
     }
 
