@@ -191,11 +191,10 @@ function installSheets () {
     turmas.getRange('B3').setValue('Defina as disciplinas que você ministra em cada turma. Ao finalizar, clique no botão "Pronto" à direita! Se quiser mudar suas escolhas, retorne para a aba "Início".');
 
     // Esconde planilhas do instalador e das configurações.
-    // Exibe planilha de Resumo
     inicio.hideSheet();
     turmas.hideSheet();
     conf.hideSheet();
-    resumo.showSheet();
+    modelo.hideSheet();
     Utilities.sleep(500);
 
     // Renomeia planilha
@@ -207,6 +206,12 @@ function installSheets () {
     ss.toast('Compartilhando com a coordenação ...');
     shareDoc();
     Utilities.sleep(500);
+
+    // Adiciona ao panorama geral
+    updatePanorama();
+
+    // Exibe planilha de Resumo
+    resumo.showSheet();
 
     // Mensagem de sucesso!
     ss.toast('Controles de notas instalados com sucesso!');
@@ -347,7 +352,7 @@ function makeCopy(t, d, c) {
     resumo.getRange(row, 11).setValue(`={${allConName}}`);
 
     // Colunas AE e AF: acertos/notas no simulado
-    var setSimulados = `={'${sheetName}'!Y4:Z28}`;
+    var setSimulados = `={'${sheetName}'!X4:Y28}`;
     resumo.getRange(row, 31).setValue(setSimulados);
 
     Utilities.sleep(500);
@@ -604,17 +609,46 @@ function remContinua() {
 
 }
 
+function updatePanorama() {
+    /**
+     * Atualiza planilha 'Panorama Geral', adicionando uma cópia
+     * de 'Resumo' à mesma, bem como a URL desta, para facilitar
+     * no momento de criação dos boletins individuais.
+     */
+
+    var id = ss.getId();
+    var panorama = SpreadsheetApp.openById('1JdHPFsGTmA7_0ReDd8KhNIW-otnVHmsIih9HpUNUAeM');
+
+    // Cria uma cópia de 'resumo-modelo'
+    var modelo = panorama.getSheetByName('resumo-modelo');
+    var newSheet = modelo.copyTo(panorama);
+
+    // Renomeia para o padrão 'Pedro DES-GMT',
+    // usando como base o nome deste documento
+    var sheetName = ss.getName().split(' — ')[0];
+    newSheet.setName(sheetName);
+    newSheet.showSheet();
+
+    // Insere um IMPORTRANGE na célula A2, puxando todos os dados
+    // de 'Resumo' desta planilha
+    var importrange = `=IMPORTRANGE("${id}"; "'Resumo'!A2:AF")`;
+    newSheet.getRange('A2').setFormula(importrange);
+
+    // Insere URL deste documento na página 'URLS'
+    var urls = panorama.getSheetByName('URLS');
+    var linkNextRow = urls.getLastRow() + 1;
+    urls.getRange(linkNextRow, 1).setValue(sheetName);
+    urls.getRange(linkNextRow, 2).setValue(id);
+
+}
 function shareDoc() {
     /**
-     * Compartilha spreadsheet com coordenação e 'rapaz do TI',
-     * além de adicionar link na planilha 'LINQUES'
+     * Compartilha spreadsheet com coordenação e 'rapaz do TI'
      */
 
     // Variables
     var id = ss.getId();
-    var name = ss.getName();
     var doc = DriveApp.getFileById(id);
-    var linques = SpreadsheetApp.openById('1JdHPFsGTmA7_0ReDd8KhNIW-otnVHmsIih9HpUNUAeM');
 
     // Verifica quem são os editores do documento
     var editors = ss.getEditors(); 
@@ -640,13 +674,9 @@ function shareDoc() {
      * Aproveita para conceder permissão a todos com o link. */
     if (cont < shares.length) {
         //ss.addEditors(shares);
-        //doc.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+        doc.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
     }
 
-    // Adiciona url deste documento à planilha de links
-    var linkNextRow = linques.getLastRow() + 1;
-    linques.getSheets()[0].getRange(linkNextRow, 1).setValue(name);
-    linques.getSheets()[0].getRange(linkNextRow, 2).setValue(id);
 
 };
 
