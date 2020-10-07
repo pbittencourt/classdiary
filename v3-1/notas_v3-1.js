@@ -1,5 +1,3 @@
-/** @OnlyCurrentDoc */
-
 /* ================================================
                   _             _            _      
    ___ ___  _ __ | |_ _ __ ___ | | ___    __| | ___ 
@@ -207,7 +205,7 @@ function installSheets () {
 
     // Compartilha com coordenação e "rapaz do TI"
     ss.toast('Compartilhando com a coordenação ...');
-    //shareDoc();
+    shareDoc();
     Utilities.sleep(500);
 
     // Mensagem de sucesso!
@@ -347,6 +345,10 @@ function makeCopy(t, d, c) {
 
     // Colunas K-> AD: notas contínuas dos estudantes.
     resumo.getRange(row, 11).setValue(`={${allConName}}`);
+
+    // Colunas AE e AF: acertos/notas no simulado
+    var setSimulados = `={'${sheetName}'!Y4:Z28}`;
+    resumo.getRange(row, 31).setValue(setSimulados);
 
     Utilities.sleep(500);
 
@@ -612,7 +614,7 @@ function shareDoc() {
     var id = ss.getId();
     var name = ss.getName();
     var doc = DriveApp.getFileById(id);
-    var linques = DriveApp.getFileById('1JdHPFsGTmA7_0ReDd8KhNIW-otnVHmsIih9HpUNUAeM');
+    var linques = SpreadsheetApp.openById('1JdHPFsGTmA7_0ReDd8KhNIW-otnVHmsIih9HpUNUAeM');
 
     // Verifica quem são os editores do documento
     var editors = ss.getEditors(); 
@@ -637,14 +639,14 @@ function shareDoc() {
      * editores do documento.
      * Aproveita para conceder permissão a todos com o link. */
     if (cont < shares.length) {
-        ss.addEditors(shares);
-        doc.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
+        //ss.addEditors(shares);
+        //doc.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
     }
 
     // Adiciona url deste documento à planilha de links
     var linkNextRow = linques.getLastRow() + 1;
-    linques.getRange(linkNextRow, 1).setValue(name);
-    linques.getRange(linkNextRow, 2).setValue(id)
+    linques.getSheets()[0].getRange(linkNextRow, 1).setValue(name);
+    linques.getSheets()[0].getRange(linkNextRow, 2).setValue(id);
 
 };
 
