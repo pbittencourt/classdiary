@@ -673,10 +673,9 @@ function shareDoc() {
      * editores do documento.
      * Aproveita para conceder permissão a todos com o link. */
     if (cont < shares.length) {
-        //ss.addEditors(shares);
+        ss.addEditors(shares);
         doc.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.VIEW);
     }
-
 
 };
 
