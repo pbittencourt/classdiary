@@ -198,20 +198,21 @@ function installSheets () {
     Utilities.sleep(500);
 
     // Renomeia planilha
-    ss.toast('Renomeando o documento ...');
     renameSS(disciplina);
     Utilities.sleep(500);
 
     // Compartilha com coordenação e "rapaz do TI"
-    ss.toast('Compartilhando com a coordenação ...');
     shareDoc();
     Utilities.sleep(500);
 
     // Adiciona ao panorama geral
+    ss.toast('Aguarde mais alguns instantes ...')
     updatePanorama();
+    Utilities.sleep(5000);
 
     // Exibe planilha de Resumo
     resumo.showSheet();
+    Utilities.sleep(500);
 
     // Mensagem de sucesso!
     ss.toast('Controles de notas instalados com sucesso!');
