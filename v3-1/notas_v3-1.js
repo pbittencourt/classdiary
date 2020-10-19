@@ -75,6 +75,7 @@ function onOpen() {
         .addItem('Remover esta turma', 'remSheet')
         .addSeparator()
         .addItem('Reiniciar documento', 'resetAllShit')
+        .addItem('Update panorama', 'updatePanorama')
         .addToUi();
 }
 
@@ -199,16 +200,16 @@ function installSheets () {
 
     // Renomeia planilha
     renameSS(disciplina);
-    Utilities.sleep(500);
+    Utilities.sleep(1000);
 
     // Compartilha com coordenação e "rapaz do TI"
     shareDoc();
-    Utilities.sleep(500);
+    Utilities.sleep(2000);
 
     // Adiciona ao panorama geral
     ss.toast('Aguarde mais alguns instantes ...')
     updatePanorama();
-    Utilities.sleep(5000);
+    Utilities.sleep(8000);
 
     // Exibe planilha de Resumo
     resumo.showSheet();
